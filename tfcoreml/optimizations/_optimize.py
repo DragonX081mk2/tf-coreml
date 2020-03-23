@@ -277,12 +277,13 @@ def _fuse_conv_mul_add(nn_layers):
         if len(next_layer.input) == 2:
           other_input = next_layer.input[1] if next_layer.input[0] == out \
               else next_layer.input[0]
-          other_input_src_layer = nn_layers[blob_src[other_input]]
-          if other_input_src_layer.WhichOneof('layer') == 'loadConstant':
-            _,H,W = other_input_src_layer.loadConstant.shape
-            if H==1 and W==1:
-              x = np.array(other_input_src_layer.loadConstant.data.floatValue)
-              return True, x, next_layer_id, next_layer.output[0]
+          if (other_input in blob_src):
+            other_input_src_layer = nn_layers[blob_src[other_input]]
+            if other_input_src_layer.WhichOneof('layer') == 'loadConstant':
+              _,H,W = other_input_src_layer.loadConstant.shape
+              if H==1 and W==1:
+                x = np.array(other_input_src_layer.loadConstant.data.floatValue)
+                return True, x, next_layer_id, next_layer.output[0]
     return False, None, None, None
 
   def cast_two_layers_as_bn(x1, x2, conv_out, id1, id2):
